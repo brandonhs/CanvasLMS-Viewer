@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Canvas</title>
+
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="bower_components/components-font-awesome/css/all.min.css" />
+
+        <style>
+            .anchor {
+                padding-top: 73px;
+                margin-top: -73px;
+            }
+        </style>
+    </head>
+    <body style="padding-top: 73px">
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+            <a class="navbar-brand" href="#">Canvas Schedule</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <script>
+            document.body.onload = () => {
+                $.ajax({
+                    url: '/user',
+                    success: function (data) {
+                        document.title = data.name + ' - Canvas';
+                    },
+                    error: function (e) {
+                        console.error(e);
+                    },
+                });
+            };
+
+            const addAssignment = (assignment) => {
+                let description = assignment.description || 'No description body';
+                let title = assignment.name;
+                let due = new Date(assignment.due_at).toLocaleString();
+                let col = '#000000';
+                if (new Date().getTime() > new Date(assignment.due_at).getTime()) {
+                    col = '#FF0000';
+                    due += ' (late)';
+                }
+                if (assignment.locked_for_user) {
+                    due += ' <i class="fas fa-lock"></i>';
+                }
+                return `
+                    <ul>
+                        <a style="color: gray" href='${assignment.html_url}'>
+                            <h1>${title}</h1>
+                        </a>
+                        <h6 style = "color: ${col}">Due: ${due}</h6>
+                        <br>
+                        ${description}
+                    </ul>`;
+            };
+
+            const groupBy = (xs, key) => {
+                return xs.reduce(function (rv, x) {
+                    (rv[x[key]] = rv[x[key]] || []).push(x);
+                    return rv;
+                }, {});
+            };
+
+            $.ajax({
+                url: '/todo',
+                success: function (data) {
+                    var grouped = groupBy(data, 'course_name');
+                    for (let a in grouped) {
+                        let g = grouped[a];
+                        let d = `<div class="anchor" id='${a}'><h1>${a}</h1>`;
+                        for (let course of g) {
+                            d += addAssignment(course.assignment);
+                        }
+                        d += '</div>';
+                        $('#class-list').append(`<div><a href='#${a}'>${a}</a></div>`);
+                        $('#todo').append(d);
+                    }
+                    window.grouped = grouped;
+                },
+                error: function (e) {
+                    console.error(e);
+                },
+            });
+        </script>
+
+        <div id="class-list" style="margin-left: 20px"></div>
+        <div id="todo" style="margin-left: 20px"></div>
+    </body>
+</html>
