@@ -10,7 +10,7 @@
     "devDependencies": {},
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "postinstall": "npm run configure",
+        "postinstall": "npm run configure && cd ./public && bower install",
         "start": "node index.js",
         "configure": "node ./scripts/init.js"
     },
