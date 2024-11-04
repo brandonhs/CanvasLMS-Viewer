@@ -3,7 +3,7 @@
         "canvas-lms-api": "^0.2.3",
         "cors": "^2.8.5",
         "dotenv": "^8.2.0",
-        "express": "^4.17.1"
+        "express": "^4.21.1"
     },
     "name": "canvas-lms-todolist",
     "version": "1.0.0",
